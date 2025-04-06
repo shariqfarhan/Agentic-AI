@@ -1,4 +1,4 @@
-# Freeform Math Agent
+# MCPaint
 
 ## Overview
 
