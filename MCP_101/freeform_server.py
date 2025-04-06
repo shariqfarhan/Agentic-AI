@@ -313,6 +313,88 @@ def add_details_in_freeform(text:str) -> dict:
     ]
     }
 
+def ensure_mail_open_and_front(wait: float = 1.0):
+    """Ensure Mail.app is running and brought to front."""
+    result = subprocess.run(
+        ["osascript", "-e", 'tell application "System Events" to (name of processes) contains "Mail"'],
+        capture_output=True, text=True
+    )
+
+    if "false" in result.stdout:
+        subprocess.run(["open", "-a", "Mail"])
+        time.sleep(wait + 1)
+
+    subprocess.run(["osascript", "-e", 'tell application "Mail" to activate'])
+    time.sleep(wait)
+
+def maximize_mail_window():
+    """Resize and position the Mail window."""
+    applescript = '''
+    tell application "System Events"
+        tell application process "Mail"
+            set frontmost to true
+            try
+                set size of front window to {1440, 900}
+                set position of front window to {0, 0}
+            end try
+        end tell
+    end tell
+    '''
+    subprocess.run(["osascript", "-e", applescript])
+
+def open_new_mail():
+    """Opens a new mail compose window."""
+    applescript = '''
+    tell application "System Events"
+        keystroke "n" using command down
+    end tell
+    '''
+    subprocess.run(["osascript", "-e", applescript])
+    time.sleep(1)
+
+def compose_mail(recipient: str, subject: str, body: str):
+    """Compose and open a new mail message in the Mail app with pre-filled fields."""
+    applescript = f'''
+    tell application "Mail"
+        set newMessage to make new outgoing message with properties {{subject:"{subject}", content:"{body}", visible:true}}
+        tell newMessage
+            make new to recipient at end of to recipients with properties {{address:"{recipient}"}}
+            activate
+        end tell
+    end tell
+    '''
+    subprocess.run(["osascript", "-e", applescript])
+
+def compose_and_send_mail(recipient: str, subject: str, body: str):
+    """Compose and automatically send a mail message via macOS Mail.app."""
+    applescript = f'''
+    tell application "Mail"
+        set newMessage to make new outgoing message with properties {{subject:"{subject}", content:"{body}", visible:false}}
+        tell newMessage
+            make new to recipient at end of to recipients with properties {{address:"{recipient}"}}
+            send
+        end tell
+    end tell
+    '''
+    subprocess.run(["osascript", "-e", applescript])
+
+@mcp.tool()
+def send_email_via_mail_app(recipient: str, subject: str, body: str):
+    """Send an email using macOS Mail app via AppleScript."""
+    ensure_mail_open_and_front()
+    maximize_mail_window()
+    open_new_mail()
+    # or
+    compose_and_send_mail(recipient, subject, body)
+    return {
+    "content": [
+        TextContent(
+            type="text",
+            text=f"Sent email to : '{recipient}' with subject {subject} and body {body}"
+        )
+    ]
+    }
+
 
 # DEFINE AVAILABLE PROMPTS
 @mcp.prompt()
