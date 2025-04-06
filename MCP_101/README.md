@@ -64,6 +64,8 @@ The default query asks the agent to:
 - Communication between client and server occurs through the MCP protocol
 - The server exposes tools for both mathematical operations and Freeform automation
 
+### [Link to Video Demo](https://youtu.be/LjgBEc43jXg)
+
 ## License
 
 This project is for educational purposes.
